@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { PromptCard } from "@/components/PromptCard";
 import { PromptModal } from "@/components/PromptModal";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { useSearchStore } from "@/store/useSearchStore";
 import { toast } from "sonner";
 import { getPrompts, createPrompt, updatePrompt, deletePrompt } from "./actions";
@@ -109,10 +110,13 @@ export default function Home() {
             />
           </div>
 
-          <Button onClick={() => { setEditingPrompt(undefined); setIsModalOpen(true); }} className="gap-2 shadow-sm">
-            <Plus className="h-4 w-4" />
-            <span className="hidden sm:inline">New Prompt</span>
-          </Button>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <Button onClick={() => { setEditingPrompt(undefined); setIsModalOpen(true); }} className="gap-2 shadow-sm">
+              <Plus className="h-4 w-4" />
+              <span className="hidden sm:inline">New Prompt</span>
+            </Button>
+          </div>
         </div>
       </header>
 

@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect, useMemo } from "react";
 import { Plus, Search, Terminal } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -5,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { PromptCard } from "@/components/PromptCard";
 import { PromptModal } from "@/components/PromptModal";
 import { useSearchStore } from "@/store/useSearchStore";
-import { Toaster, toast } from "sonner";
+import { toast } from "sonner";
+import { getPrompts, createPrompt, updatePrompt, deletePrompt } from "./actions";
 
 interface Prompt {
   id: number;
@@ -16,42 +19,40 @@ interface Prompt {
   isPinned: boolean;
 }
 
-export default function App() {
+export default function Home() {
   const [prompts, setPrompts] = useState<Prompt[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPrompt, setEditingPrompt] = useState<Prompt | undefined>(undefined);
   const { searchQuery, setSearchQuery } = useSearchStore();
+  const [isLoading, setIsLoading] = useState(true);
 
-  const fetchPrompts = async () => {
-    try {
-      const response = await fetch("/api/prompts");
-      if (!response.ok) throw new Error("Failed to fetch");
-      const data = await response.json();
-      setPrompts(data);
-    } catch (error) {
-      toast.error("Could not load prompts");
-    }
+  const loadPrompts = async () => {
+    setIsLoading(true);
+    const data = await getPrompts();
+    setPrompts(data as Prompt[]);
+    setIsLoading(false);
   };
 
   useEffect(() => {
-    fetchPrompts();
+    loadPrompts();
   }, []);
 
-  const handleSave = async (promptData: Partial<Prompt>) => {
+  const handleSave = async (promptData: any) => {
     try {
-      const method = promptData.id ? "PUT" : "POST";
-      const url = promptData.id ? `/api/prompts/${promptData.id}` : "/api/prompts";
-      
-      const response = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(promptData),
-      });
+      let result;
+      if (promptData.id) {
+        const { id, ...data } = promptData;
+        result = await updatePrompt(id, data);
+      } else {
+        result = await createPrompt(promptData);
+      }
 
-      if (!response.ok) throw new Error("Failed to save");
-      
-      toast.success(promptData.id ? "Prompt updated" : "Prompt created");
-      fetchPrompts();
+      if (result.success) {
+        toast.success(promptData.id ? "Prompt updated" : "Prompt created");
+        loadPrompts();
+      } else {
+        throw new Error(result.error);
+      }
     } catch (error) {
       toast.error("Failed to save prompt");
     }
@@ -61,11 +62,13 @@ export default function App() {
     if (!confirm("Are you sure you want to delete this prompt?")) return;
     
     try {
-      const response = await fetch(`/api/prompts/${id}`, { method: "DELETE" });
-      if (!response.ok) throw new Error("Failed to delete");
-      
-      toast.success("Prompt deleted");
-      fetchPrompts();
+      const result = await deletePrompt(id);
+      if (result.success) {
+        toast.success("Prompt deleted");
+        loadPrompts();
+      } else {
+        throw new Error(result.error);
+      }
     } catch (error) {
       toast.error("Failed to delete prompt");
     }
@@ -86,8 +89,6 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary/20">
-      <Toaster position="top-right" />
-      
       {/* Header */}
       <header className="sticky top-0 z-10 border-b bg-background/80 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
@@ -117,7 +118,13 @@ export default function App() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 py-8">
-        {filteredPrompts.length > 0 ? (
+        {isLoading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="h-48 rounded-xl bg-muted animate-pulse" />
+            ))}
+          </div>
+        ) : filteredPrompts.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredPrompts.map((prompt) => (
               <PromptCard

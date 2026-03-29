@@ -1,0 +1,5 @@
+{
+  "name": "Prompt Manager",
+  "description": "A lightweight, personal-use web application to store, manage, and quickly copy frequently used text prompts.",
+  "requestFramePermissions": []
+}

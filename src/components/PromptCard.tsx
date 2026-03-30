@@ -36,7 +36,7 @@ export function PromptCard({ prompt, onDelete, onEdit, onTogglePin }: PromptCard
   };
 
   return (
-    <Card className={`relative group transition-all hover:shadow-md ${prompt.isPinned ? "border-primary/50 bg-primary/5" : ""}`}>
+    <Card className={`h-full flex flex-col relative group transition-all hover:shadow-md ${prompt.isPinned ? "border-primary/50 bg-primary/5" : ""}`}>
       <CardHeader className="pb-2">
         <div className="flex justify-between items-start">
           <CardTitle className="text-lg font-semibold line-clamp-1">{prompt.title}</CardTitle>
@@ -55,12 +55,12 @@ export function PromptCard({ prompt, onDelete, onEdit, onTogglePin }: PromptCard
           </span>
         )}
       </CardHeader>
-      <CardContent className="pb-4">
+      <CardContent className="pb-4 flex-1">
         <p className="text-sm text-muted-foreground line-clamp-3 whitespace-pre-wrap">
           {prompt.content}
         </p>
       </CardContent>
-      <CardFooter className="flex justify-between pt-2 border-t bg-muted/50 rounded-b-lg">
+      <CardFooter className="flex justify-between pt-2 border-t bg-muted/50 rounded-b-lg mt-auto">
         <div className="flex gap-1">
           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onEdit(prompt)}>
             <Edit className="h-4 w-4" />
